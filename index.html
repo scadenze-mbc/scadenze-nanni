@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2c3e50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Scadenze MBC">
+<meta name="robots" content="noindex, nofollow">
+<title>Scadenze MBC</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icona-192.png">
+<link rel="apple-touch-icon" href="icona-180.png">
+<style>
+  :root {
+    --blu: #2c3e50; --verde: #2ecc71; --sfondo: #eef2f6; --carta: #fff; --testo: #1f2d3a; --tenue: #6b7a89;
+    --bordo: #d6dde4; --rosso: #e74c3c; --arancio: #f39c12; --giallo: #f1c40f; --ok: #27ae60;
+    --rosso-bg: #fdecea; --arancio-bg: #fef3e2; --giallo-bg: #fdf8dc; --ok-bg: #e8f6ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --sfondo: #111820; --carta: #1b2530; --testo: #e6edf3; --tenue: #93a3b3; --bordo: #2c3a48;
+            --rosso-bg: #3a1f1d; --arancio-bg: #3a2c15; --giallo-bg: #36321a; --ok-bg: #173022; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--sfondo); color: var(--testo);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  button { font: inherit; color: inherit; }
+  .nascosto { display: none !important; }
+
+  header { position: sticky; top: 0; z-index: 5; background: var(--blu); color: #fff;
+    padding: calc(env(safe-area-inset-top) + 10px) 16px 0; }
+  .riga-titolo { display: flex; align-items: center; gap: 10px; }
+  .riga-titolo h1 { font-size: 19px; margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .riga-titolo h1 span { color: var(--verde); }
+  .icona-btn { background: rgba(255,255,255,.12); border: 0; border-radius: 10px; width: 38px; height: 38px;
+    display: grid; place-items: center; cursor: pointer; flex: none; }
+  .icona-btn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .agg { font-size: 12.5px; color: #b9c7d5; margin: 2px 0 8px; }
+  .schede { display: flex; }
+  .schede button { flex: 1; background: none; border: 0; color: #b9c7d5; padding: 10px 0 11px; font-weight: 600;
+    border-bottom: 3px solid transparent; cursor: pointer; }
+  .schede button.attiva { color: #fff; border-color: var(--verde); }
+
+  main { padding: 14px 16px calc(env(safe-area-inset-bottom) + 24px); max-width: 720px; margin: 0 auto; }
+  .avviso { background: var(--arancio-bg); border-left: 4px solid var(--arancio); padding: 10px 12px; border-radius: 0 10px 10px 0;
+    font-size: 14px; margin-bottom: 12px; }
+  .contatori { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .cont { background: var(--carta); border-radius: 12px; padding: 10px; text-align: center; border-top: 4px solid var(--bordo); }
+  .cont b { display: block; font-size: 24px; line-height: 1.1; }
+  .cont small { color: var(--tenue); font-size: 12px; }
+  .cont.r { border-color: var(--rosso); } .cont.a { border-color: var(--arancio); } .cont.g { border-color: var(--giallo); }
+  .filtri { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
+  .filtri button { border: 1px solid var(--bordo); background: var(--carta); border-radius: 20px; padding: 6px 14px; white-space: nowrap; cursor: pointer; font-size: 14px; }
+  .filtri button.attiva { background: var(--blu); border-color: var(--blu); color: #fff; }
+  .cerca { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--bordo); background: var(--carta);
+    color: var(--testo); font: inherit; margin-bottom: 12px; }
+
+  .voce { background: var(--carta); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; display: flex; gap: 12px;
+    align-items: center; border-left: 5px solid var(--bordo); }
+  .voce.cliccabile { cursor: pointer; }
+  .voce .info { flex: 1; min-width: 0; }
+  .voce .nome { font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .voce .sotto { color: var(--tenue); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .giorni { text-align: right; flex: none; font-size: 13px; }
+  .giorni b { display: block; font-size: 15px; }
+  .liv-r { border-left-color: var(--rosso); } .liv-r .giorni b { color: var(--rosso); }
+  .liv-a { border-left-color: var(--arancio); } .liv-a .giorni b { color: var(--arancio); }
+  .liv-g { border-left-color: var(--giallo); } .liv-g .giorni b { color: #b7950b; }
+  .liv-o { border-left-color: var(--ok); } .liv-o .giorni b { color: var(--ok); }
+  .vuoto { text-align: center; color: var(--tenue); padding: 40px 10px; }
+
+  /* scheda dipendente */
+  .velo { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10; display: flex; align-items: flex-end; justify-content: center; }
+  .foglio { background: var(--sfondo); width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto; border-radius: 18px 18px 0 0;
+    padding: 8px 16px calc(env(safe-area-inset-bottom) + 20px); }
+  .maniglia { width: 40px; height: 5px; border-radius: 3px; background: var(--bordo); margin: 0 auto 12px; }
+  .foglio h2 { margin: 0; font-size: 20px; }
+  .foglio .sotto { color: var(--tenue); margin-bottom: 14px; }
+  .chiudi { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--bordo); background: var(--carta); cursor: pointer; font-weight: 600; }
+  .sola { font-size: 12px; color: var(--tenue); text-align: center; margin-top: 18px; }
+
+  /* accesso */
+  #accesso { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px 20px; max-width: 420px; margin: 0 auto; }
+  .logo { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 18px; }
+  #accesso h1 { margin: 0 0 6px; font-size: 26px; } #accesso h1 span { color: var(--verde); }
+  #accesso p { color: var(--tenue); margin: 0 0 22px; }
+  #accesso input[type=password], #accesso input[type=text] { width: 100%; padding: 14px; font: inherit; font-size: 18px; letter-spacing: .08em;
+    border-radius: 12px; border: 1px solid var(--bordo); background: var(--carta); color: var(--testo); text-transform: uppercase; }
+  .ricorda { display: flex; gap: 8px; align-items: center; margin: 12px 0 18px; color: var(--tenue); font-size: 15px; }
+  .primario { width: 100%; padding: 14px; border: 0; border-radius: 12px; background: var(--blu); color: #fff; font-weight: 700; font-size: 17px; cursor: pointer; }
+  .errore { color: var(--rosso); min-height: 22px; margin-top: 10px; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<section id="accesso" class="nascosto">
+  <img class="logo" src="icona-192.png" alt="">
+  <h1>Scadenze <span>MBC</span></h1>
+  <p>Consultazione delle scadenze del personale, in sola lettura. Inserisci il codice di accesso ricevuto dall'azienda.</p>
+  <form id="modulo" autocomplete="off">
+    <input id="codice" type="password" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="Codice di accesso" aria-label="Codice di accesso">
+    <label class="ricorda"><input id="ricorda" type="checkbox" checked> Ricorda su questo telefono</label>
+    <button class="primario" type="submit" id="entra">Entra</button>
+    <div class="errore" id="errore" role="alert"></div>
+  </form>
+</section>
+
+<div id="app" class="nascosto">
+  <header>
+    <div class="riga-titolo">
+      <h1 id="titolo">Scadenze <span>MBC</span></h1>
+      <button class="icona-btn" id="aggiorna" title="Aggiorna" aria-label="Aggiorna">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="icona-btn" id="esci" title="Esci" aria-label="Esci">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+    </div>
+    <div class="agg" id="agg"></div>
+    <nav class="schede">
+      <button class="attiva" data-vista="scadenze">Scadenze</button>
+      <button data-vista="dipendenti">Dipendenti</button>
+      <button data-vista="azienda" id="tab-azienda" class="nascosto">Azienda</button>
+    </nav>
+  </header>
+  <main>
+    <div id="avviso" class="avviso nascosto"></div>
+    <section id="v-scadenze">
+      <div class="contatori">
+        <div class="cont r"><b id="n-scadute">0</b><small>scadute</small></div>
+        <div class="cont a"><b id="n-7">0</b><small>entro 7 gg</small></div>
+        <div class="cont g"><b id="n-30">0</b><small>entro 30 gg</small></div>
+      </div>
+      <div class="filtri" id="filtri">
+        <button data-g="7">7 giorni</button><button data-g="30" class="attiva">30 giorni</button>
+        <button data-g="90">90 giorni</button><button data-g="365">1 anno</button><button data-g="tutte">Tutte</button>
+      </div>
+      <div id="lista-scadenze"></div>
+    </section>
+    <section id="v-dipendenti" class="nascosto">
+      <input class="cerca" id="cerca" type="search" placeholder="Cerca per nome, mansione o sede" aria-label="Cerca">
+      <div id="lista-dipendenti"></div>
+    </section>
+    <section id="v-azienda" class="nascosto">
+      <div class="contatori" style="grid-template-columns: repeat(2, 1fr)">
+        <div class="cont r"><b id="az-scadute">0</b><small>scadute</small></div>
+        <div class="cont a"><b id="az-preavviso">0</b><small>in preavviso</small></div>
+      </div>
+      <div class="filtri" id="filtri-az">
+        <button data-f="preavviso" class="attiva">In preavviso</button><button data-f="tutte">Tutte</button>
+      </div>
+      <div id="lista-azienda"></div>
+    </section>
+    <p class="sola">Consultazione in sola lettura · le modifiche si fanno dal programma sul PC</p>
+  </main>
+</div>
+
+<div id="velo" class="velo nascosto"><div class="foglio" id="foglio"></div></div>
+
+<script>
+"use strict";
+const FILE = "scadenze.enc", CHIAVE_MEM = "mbc_codice";
+const $ = id => document.getElementById(id);
+let dati = null, filtro = "30";
+
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decifra(pacco, codice) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(codice), "PBKDF2", false, ["deriveKey"]);
+  const chiave = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(pacco.sale), iterations: pacco.it, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const chiaro = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(pacco.iv) }, chiave, b64(pacco.dati));
+  return JSON.parse(new TextDecoder().decode(chiaro));
+}
+async function scarica() {
+  const r = await fetch(FILE + "?t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error("rete");
+  return r.json();
+}
+const memLeggi = () => { try { return localStorage.getItem(CHIAVE_MEM); } catch (e) { return null; } };
+const memScrivi = v => { try { v ? localStorage.setItem(CHIAVE_MEM, v) : localStorage.removeItem(CHIAVE_MEM); } catch (e) {} };
+const normalizza = c => String(c || "").toUpperCase().replace(/[\s-]+/g, "");
+let codiceSessione = null;
+
+// ---------- date ----------
+const oggi = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const daIso = s => { const [a, m, g] = s.split("-").map(Number); return new Date(a, m - 1, g); };
+const giorniA = s => Math.round((daIso(s) - oggi()) / 86400000);
+const fmt = s => daIso(s).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+const livello = g => g < 0 ? "r" : g <= 7 ? "a" : g <= 30 ? "g" : "o";
+function testoGiorni(g) {
+  if (g < 0) return g === -1 ? "scaduta ieri" : `scaduta da ${-g} gg`;
+  if (g === 0) return "oggi";
+  if (g === 1) return "domani";
+  return `tra ${g} gg`;
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------- disegno ----------
+function tutteScadenze() {
+  const out = [];
+  dati.dipendenti.forEach((d, i) => d.x.forEach(s => out.push({ i, nome: d.n, t: s.t, d: s.d, g: giorniA(s.d) })));
+  return out.sort((a, b) => a.g - b.g || a.nome.localeCompare(b.nome, "it"));
+}
+function voce(nome, sotto, data, g, i) {
+  return `<div class="voce liv-${livello(g)} cliccabile" data-i="${i}">
+    <div class="info"><div class="nome">${esc(nome)}</div><div class="sotto">${esc(sotto)}</div></div>
+    <div class="giorni"><b>${testoGiorni(g)}</b>${fmt(data)}</div></div>`;
+}
+function disegnaScadenze() {
+  const tutte = tutteScadenze();
+  $("n-scadute").textContent = tutte.filter(s => s.g < 0).length;
+  $("n-7").textContent = tutte.filter(s => s.g >= 0 && s.g <= 7).length;
+  $("n-30").textContent = tutte.filter(s => s.g >= 0 && s.g <= 30).length;
+  const lim = filtro === "tutte" ? Infinity : Number(filtro);
+  const vis = tutte.filter(s => s.g <= lim);
+  $("lista-scadenze").innerHTML = vis.length ? vis.map(s => voce(s.nome, s.t, s.d, s.g, s.i)).join("")
+    : `<div class="vuoto">Nessuna scadenza nei prossimi ${filtro} giorni 👍</div>`;
+}
+function disegnaDipendenti() {
+  const q = $("cerca").value.trim().toLowerCase();
+  const righe = dati.dipendenti.map((d, i) => ({ d, i }))
+    .filter(({ d }) => !q || [d.n, d.m, d.s].join(" ").toLowerCase().includes(q));
+  $("lista-dipendenti").innerHTML = righe.length ? righe.map(({ d, i }) => {
+    const prox = d.x.map(s => ({ ...s, g: giorniA(s.d) })).sort((a, b) => a.g - b.g)[0];
+    const sotto = [d.m, d.s].filter(Boolean).join(" · ") || "—";
+    if (!prox) return `<div class="voce cliccabile" data-i="${i}"><div class="info"><div class="nome">${esc(d.n)}</div>
+      <div class="sotto">${esc(sotto)}</div></div><div class="giorni">nessuna<br>scadenza</div></div>`;
+    return voce(d.n, sotto, prox.d, prox.g, i).replace('<div class="giorni">', `<div class="giorni" title="${esc(prox.t)}">`);
+  }).join("") : `<div class="vuoto">Nessun dipendente trovato</div>`;
+}
+function apriScheda(i) {
+  const d = dati.dipendenti[i];
+  const sc = d.x.map(s => ({ ...s, g: giorniA(s.d) })).sort((a, b) => a.g - b.g);
+  $("foglio").innerHTML = `<div class="maniglia"></div><h2>${esc(d.n)}</h2>
+    <div class="sotto">${esc([d.m, d.s].filter(Boolean).join(" · ") || "—")}</div>
+    ${sc.length ? sc.map(s => `<div class="voce liv-${livello(s.g)}"><div class="info"><div class="nome">${esc(s.t)}</div></div>
+      <div class="giorni"><b>${testoGiorni(s.g)}</b>${fmt(s.d)}</div></div>`).join("") : '<div class="vuoto">Nessuna scadenza registrata</div>'}
+    <button class="chiudi" id="chiudi-scheda">Chiudi</button>`;
+  $("velo").classList.remove("nascosto");
+  $("chiudi-scheda").onclick = chiudiScheda;
+}
+const chiudiScheda = () => $("velo").classList.add("nascosto");
+
+let filtroAz = "preavviso";
+function disegnaAzienda() {
+  const a = Array.isArray(dati.a) ? dati.a : null;
+  $("tab-azienda").classList.toggle("nascosto", !a);
+  if (!a) return;
+  const voci = a.map(s => ({ ...s, g: giorniA(s.d) })).sort((x, y) => x.g - y.g || x.t.localeCompare(y.t, "it"));
+  $("az-scadute").textContent = voci.filter(s => s.g < 0).length;
+  $("az-preavviso").textContent = voci.filter(s => s.g >= 0 && s.g <= s.p).length;
+  const vis = filtroAz === "tutte" ? voci : voci.filter(s => s.g <= s.p);
+  const liv = s => s.g < 0 ? "r" : s.g <= 7 ? "a" : s.g <= s.p ? "g" : "o";
+  $("lista-azienda").innerHTML = vis.length ? vis.map(s => `<div class="voce liv-${liv(s)}">
+    <div class="info"><div class="nome">${esc(s.t)}</div><div class="sotto">${esc([s.c, s.r].filter(Boolean).join(" · ") || "—")}</div></div>
+    <div class="giorni"><b>${testoGiorni(s.g)}</b>${fmt(s.d)}</div></div>`).join("")
+    : `<div class="vuoto">${filtroAz === "tutte" ? "Nessuna scadenza aziendale" : "Nessuna scadenza aziendale in preavviso 👍"}</div>`;
+}
+function disegna() {
+  $("titolo").innerHTML = dati.azienda ? esc(dati.azienda) : 'Scadenze <span>MBC</span>';
+  const gen = new Date(dati.generato);
+  $("agg").textContent = "Dati aggiornati al " + gen.toLocaleDateString("it-IT") + " ore " +
+    gen.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  const vecchi = (Date.now() - gen) / 86400000;
+  $("avviso").classList.toggle("nascosto", vecchi < 3);
+  $("avviso").textContent = `Attenzione: i dati hanno ${Math.floor(vecchi)} giorni. Verifica che il programma sul PC venga aperto e aggiorni l'app.`;
+  disegnaScadenze(); disegnaDipendenti(); disegnaAzienda();
+  const attiva = document.querySelector(".schede button.attiva");
+  if (attiva && attiva.classList.contains("nascosto")) document.querySelector('[data-vista="scadenze"]').click();
+}
+
+// ---------- flusso ----------
+function mostraAccesso(msg) {
+  $("app").classList.add("nascosto"); $("accesso").classList.remove("nascosto");
+  $("errore").textContent = msg || ""; $("codice").value = "";
+}
+async function carica(codice) {
+  codice = normalizza(codice);
+  let pacco;
+  try { pacco = await scarica(); }
+  catch (e) { throw new Error("Impossibile scaricare i dati: controlla la connessione."); }
+  try { dati = await decifra(pacco, codice); }
+  catch (e) { throw new Error("Codice di accesso non valido."); }
+  if (dati.spenta) {   // licenza dell'app non attiva: il codice resta memorizzato
+    codiceSessione = codice; dati = null;
+    throw new Error("Servizio non attivo: l'app telefono non è compresa nella licenza attuale. Rivolgiti all'ufficio.");
+  }
+  codiceSessione = codice;
+  $("accesso").classList.add("nascosto"); $("app").classList.remove("nascosto");
+  disegna();
+}
+$("modulo").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const codice = normalizza($("codice").value);
+  if (!codice) return;
+  $("entra").disabled = true; $("entra").textContent = "Verifica…"; $("errore").textContent = "";
+  try { await carica(codice); memScrivi($("ricorda").checked ? codice : null); }
+  catch (e) { $("errore").textContent = e.message; }
+  finally { $("entra").disabled = false; $("entra").textContent = "Entra"; }
+});
+$("aggiorna").onclick = async () => {
+  const b = $("aggiorna"); b.style.opacity = .5;
+  try { await carica(codiceSessione); } catch (e) { if (e.message.startsWith("Codice")) { memScrivi(null); mostraAccesso("Il codice è cambiato: inseriscilo di nuovo."); } else if (e.message.startsWith("Servizio")) mostraAccesso(e.message); else alert(e.message); }
+  b.style.opacity = 1;
+};
+$("esci").onclick = () => { if (confirm("Uscire e dimenticare il codice su questo telefono?")) { memScrivi(null); codiceSessione = null; dati = null; mostraAccesso(); } };
+document.querySelectorAll(".schede button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".schede button").forEach(x => x.classList.toggle("attiva", x === b));
+  ["scadenze", "dipendenti", "azienda"].forEach(v => $("v-" + v).classList.toggle("nascosto", b.dataset.vista !== v));
+});
+$("filtri-az").onclick = ev => { const b = ev.target.closest("button"); if (!b) return; filtroAz = b.dataset.f;
+  document.querySelectorAll("#filtri-az button").forEach(x => x.classList.toggle("attiva", x === b)); disegnaAzienda(); };
+$("filtri").onclick = ev => { const b = ev.target.closest("button"); if (!b) return; filtro = b.dataset.g;
+  document.querySelectorAll("#filtri button").forEach(x => x.classList.toggle("attiva", x === b)); disegnaScadenze(); };
+$("cerca").oninput = disegnaDipendenti;
+document.addEventListener("click", ev => { const v = ev.target.closest(".voce.cliccabile"); if (v) apriScheda(Number(v.dataset.i)); });
+$("velo").onclick = ev => { if (ev.target === $("velo")) chiudiScheda(); };
+document.addEventListener("visibilitychange", () => { if (!document.hidden && dati) { disegna(); } });
+
+(async () => {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  const salvato = memLeggi();
+  if (!salvato) return mostraAccesso();
+  try { await carica(salvato); }
+  catch (e) { if (e.message.startsWith("Codice")) memScrivi(null); mostraAccesso(e.message); }
+})();
+</script>
+</body>
+</html>
